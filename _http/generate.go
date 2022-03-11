@@ -29,9 +29,7 @@ func init() {
 func main() {
 	fileSet := token.NewFileSet()
 	packages, err := parser.ParseDir(fileSet, *inputDir, nil, parser.ParseComments)
-	if err != nil {
-		panic(err)
-	}
+	_panic(err)
 	for pkgName, astPkg := range packages {
 		g := &GoFile{
 			Package:      pkgName,
@@ -46,6 +44,12 @@ func main() {
 			g.scan(astFile)
 		}
 		g.output()
+	}
+}
+
+func _panic(err error) {
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -118,9 +122,7 @@ func (g *GoFile) scan(astFile *ast.File) {
 			continue
 		}
 		requestMapping := new(RequestMapping)
-		if err := json.Unmarshal([]byte(funcDecl.Doc.List[l-1].Text[index+len(annotation):]), requestMapping); err != nil {
-			panic(err)
-		}
+		_panic(json.Unmarshal([]byte(funcDecl.Doc.List[l-1].Text[index+len(annotation):]), requestMapping))
 		if funcDecl.Recv == nil {
 			continue
 		}
@@ -208,17 +210,13 @@ func (g *GoFile) output() {
 		})
 	}
 	buf := new(bytes.Buffer)
-	if err := tpl.Execute(buf, g); err != nil {
-		panic(err)
-	}
+	_panic(tpl.Execute(buf, g))
 	bs, err := format.Source(buf.Bytes())
 	if err != nil {
 		panic(err)
 	}
 	filename := filepath.Join(g.dir, *outputFile)
-	if err = os.WriteFile(filename, bs, os.ModePerm); err != nil {
-		panic(err)
-	}
+	_panic(os.WriteFile(filename, bs, os.ModePerm))
 	log.Printf("output:%v", filename)
 }
 
